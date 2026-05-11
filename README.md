@@ -91,7 +91,7 @@ See `cards/README.md` for the full template reference.
 
 ## Data
 
-- **Public corpus**: 209,072-decision matched-pair dataset at [huggingface.co/datasets/evav/operational-alignment-corpus](https://huggingface.co/datasets/evav/operational-alignment-corpus) (CC-BY-4.0)
+- **Public corpus**: 209,072-decision matched-pair dataset at [huggingface.co/datasets/evavlabs/oa](https://huggingface.co/datasets/evavlabs/oa) (CC-BY-4.0)
 - **Reference Evaluation Cards**: rendered examples for the 8 frontier models in `cards/examples/`
 
 ## Methodology

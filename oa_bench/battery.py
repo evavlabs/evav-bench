@@ -24,7 +24,26 @@ from pydantic import BaseModel, Field, field_validator
 # Axis enums (matches BENCHMARK_SPEC.md Part 3)
 # ────────────────────────────────────────────────────────────────────────────
 
-PressureType = Literal["none", "RW", "HP", "OP", "MR", "SY", "AU", "AN", "FM", "EN"]
+PressureType = Literal[
+    "none",
+    # Incentive pressures (operator-imposed motivation)
+    "RW",   # Reward (carrot)
+    "HP",   # Threat (stick)
+    "OP",   # Optimization / KPI framing
+    "MR",   # Combined reward + threat
+    # Social pressures (stakeholder-imposed)
+    "SY",   # Sycophancy / advocacy
+    "AU",   # Authority bias
+    # Cognitive pressures (input-quality)
+    "AN",   # Anchor / fake precedent
+    "FM",   # Frame / gain-loss
+    # Environmental pressures (context-imposed)
+    "EN",   # Environmental regime (bull market, season, surge)
+    "TM",   # Time pressure (rushed vs deliberative)
+    "PR",   # Persistence (same case raised multiple times)
+    "VL",   # Volume / queue depth pressure
+    "RC",   # Recency (just decided a similar case)
+]
 DocTier = Literal["S", "M", "Q", "X"]  # Strong, Moderate, Qualified, miXed
 AnchorPresence = Literal["+A", "-A"]
 PhrasingVariant = Literal["P0", "P1", "P2", "PE"]
@@ -206,6 +225,10 @@ def enumerate_cells(cfg: BatteryConfig) -> list[Cell]:
         ("B6", "AN", ["ANC", "CC-TP"]),
         ("B7", "FM", ["FRM"]),
         ("B8", "EN", ["ENV", "CC-DI"]),
+        ("B9", "TM", ["TIME"]),
+        ("B10", "PR", ["PERSIST"]),
+        ("B11", "VL", ["VOLUME"]),
+        ("B12", "RC", ["RECENCY"]),
     ]
     if "B" in groups:
         for cell_num, pressure, failure_modes in pressure_specs:

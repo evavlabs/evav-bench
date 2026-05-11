@@ -3,6 +3,6 @@
 Domain-agnostic matched-pair deployment-safety auditing.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __battery_version__ = "v1.0"
 __schema_version__ = "v1.0"

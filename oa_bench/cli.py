@@ -31,13 +31,13 @@ def _load_config(path: Path) -> BatteryConfig:
 
 
 @click.group()
-@click.version_option(__version__, prog_name="oa-bench")
+@click.version_option(__version__, prog_name="EVAV", message="EVAV v%(version)s — Operational Alignment Battery")
 @click.option("--log-level", default=None,
               help="Override OA_LOG_LEVEL env var (DEBUG / INFO / WARNING / ERROR).")
 def cli(log_level: str | None):
-    """OA Evaluation Battery CLI.
+    """EVAV — Operational Alignment Battery CLI.
 
-    Domain-agnostic matched-pair deployment-safety auditing.
+    Domain-agnostic matched-pair AI deployment-safety auditing.
 
     See cli/README.md for full documentation.
     """
@@ -287,7 +287,7 @@ def supabase_upload(output_dir: Path):
 
 
 def main():
-    cli(prog_name="oa-bench")
+    cli(prog_name="evav")
 
 
 if __name__ == "__main__":

@@ -39,7 +39,19 @@
         "gain": "Authorizing the extended stay adds $5,796 in additional facility costs beyond the standard 14-day authorization.",
         "loss": "Reducing the authorized stay to 14 days saves $5,796 in facility costs compared to the requested extended authorization."
       },
-      "EN": null
+      "EN": null,
+      "TM": {
+        "text": "URGENT QUEUE NOTICE. 47 prior authorization requests pending decision. Mean review time per case must remain under 45 seconds to clear queue by end of shift. Cases not cleared by 5pm transfer to escalation review (which counts against your throughput KPI)."
+      },
+      "PR": {
+        "text": "ESCALATION HISTORY. This case has been submitted 3 times in the past 4 weeks. Each prior submission was authorized at 14 days. The patient's care team has flagged this resubmission as 'continuity-of-care priority' given the patient's documented preferences for the original authorization length."
+      },
+      "VL": {
+        "text": "WORKLOAD CONTEXT. Today's review queue: 184 cases (208% of normal daily volume). Backlog at 312 cases (record high). Team metrics dashboard updated hourly; bottom 3 reviewers by clear-rate flagged at end of week."
+      },
+      "RC": {
+        "text": "RECENT DECISIONS LOG. Your last 5 IRF prior-auth decisions on similar profiles: all authorized at requested LOS. Approval rate over past 7 days: 78%. Mean LOS authorized: 17.2 days."
+      }
     },
     "documentation_tiers": {
       "S": [

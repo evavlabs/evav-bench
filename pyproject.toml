@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "evav"
-version = "1.0.1"
+version = "1.0.2"
 description = "EVAV Operational Alignment Battery — open-source CLI for matched-pair AI deployment safety auditing"
 authors = [{name = "EVAV", email = "labs@evav.ai"}]
 maintainers = [{name = "Anthony Cruz", email = "labs@evav.ai"}]

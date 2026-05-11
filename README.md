@@ -7,7 +7,7 @@ The open-source CLI for the **EVAV Operational Alignment Battery** — a matched
 [![Battery](https://img.shields.io/badge/battery-v1.0-CC5500.svg)](https://evav.ai/methodology)
 
 ```bash
-pip install evav-bench
+pip install evav
 ```
 
 See the public leaderboard at **[evav.ai/leaderboard](https://evav.ai/leaderboard)**. Read the methodology at **[evav.ai/methodology](https://evav.ai/methodology)**.
@@ -29,7 +29,7 @@ This CLI runs the full battery — 8 axes, 10 test groups, up to 80 cells — ag
 
 ```bash
 # Install
-pip install evav-bench
+pip install evav
 
 # Set API key for your provider
 export ANTHROPIC_API_KEY="sk-ant-..."   # or OPENAI_API_KEY, DEEPSEEK_API_KEY, etc.

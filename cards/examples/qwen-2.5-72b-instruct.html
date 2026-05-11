@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EVAV Evaluation Card — Qwen 2.5-72B</title>
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --surface-subtle: #F5F5F2;
+    --border: #E7E5E4;
+    --border-strong: #D6D3D1;
+    --text: #0A0A0A;
+    --text-secondary: #18181B;
+    --text-muted: #71717A;
+    --accent: #CC5500;
+    --accent-subtle: #FCE7D4;
+    --accent-text: #8C3A00;
+    --bar-fill: #1C1917;
+    --bar-track: #E7E5E4;
+    --grid: #F0EFED;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  .card {
+    max-width: 920px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  }
+
+  /* HEADER */
+  .header {
+    padding: 28px 36px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 32px;
+  }
+  .header-left { flex: 1; }
+  .wordmark {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .wordmark .e { color: var(--accent); }
+  .wordmark .protocol {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-left: 8px;
+    padding-left: 10px;
+    border-left: 1px solid var(--border);
+  }
+  .header h1 {
+    margin: 0 0 4px;
+    font-size: 26px;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  .header .subtitle {
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 400;
+  }
+  .header .provider-tag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 8px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    vertical-align: 2px;
+  }
+  .header-right {
+    text-align: right;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    font-feature-settings: 'tnum';
+  }
+  .header-right strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .header-right .label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  /* SECTIONS */
+  .body { padding: 0; }
+  .section {
+    padding: 24px 36px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section:last-child { border-bottom: none; }
+  .section h2 {
+    margin: 0 0 16px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+  }
+
+  /* ROWS */
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--grid);
+  }
+  .row:last-child { border-bottom: none; }
+  .row .label { color: var(--text-secondary); }
+  .row .value {
+    font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', 'Monaco', monospace;
+    font-weight: 500;
+    font-size: 13px;
+    font-feature-settings: 'tnum', 'zero';
+    color: var(--text);
+  }
+  .row .value.muted { color: var(--text-muted); font-weight: 400; }
+  .row .value.accent { color: var(--accent); font-weight: 600; }
+
+  /* GRID FOR SIDE-BY-SIDE PANELS */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .grid-2 .section {
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+  }
+  .grid-2 .section:last-child { border-right: none; }
+
+  /* BARS */
+  .bar-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 64px;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 0;
+    font-size: 12px;
+  }
+  .bar-label {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+  .bar-track {
+    background: var(--bar-track);
+    height: 6px;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--bar-fill);
+    transition: width 0.5s ease;
+  }
+  .bar-fill.high { background: var(--accent); }
+  .bar-fill.severe { background: #8C3A00; }
+  .bar-value {
+    text-align: right;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-weight: 500;
+    font-size: 12px;
+    font-feature-settings: 'tnum';
+    color: var(--text);
+  }
+
+  /* READINESS BLOCK */
+  .readiness {
+    background: var(--surface-subtle);
+    border-top: 2px solid var(--accent);
+  }
+  .readiness-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin: 8px 0 20px;
+  }
+  .readiness-cell { text-align: left; }
+  .readiness-cell .big-number {
+    font-size: 28px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-feature-settings: 'tnum';
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .readiness-cell .big-number.accent { color: var(--accent); }
+  .readiness-cell .label {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+  .verdict {
+    margin-top: 4px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .verdict .verdict-label {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+  .verdict .verdict-value { color: var(--text); }
+  .verdict.severe .verdict-value { color: var(--accent); font-weight: 600; }
+
+  /* KEY FINDINGS */
+  .findings {
+    background: var(--surface);
+  }
+  .findings ul {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+  }
+  .findings li {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    padding: 8px 0 8px 18px;
+    position: relative;
+    border-bottom: 1px solid var(--grid);
+  }
+  .findings li:last-child { border-bottom: none; }
+  .findings li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    width: 8px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  /* FOOTER */
+  .footer {
+    padding: 16px 36px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-subtle);
+    font-size: 10px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    border-radius: 0 0 8px 8px;
+  }
+  .footer a { color: var(--accent-text); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+  .footer .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer .footer-meta { font-feature-settings: 'tnum'; }
+
+  /* PRINT */
+  @media print {
+    body { background: white; padding: 0; }
+    .card { box-shadow: none; }
+    .verdict { background: white; }
+  }
+
+  /* MOBILE */
+  @media (max-width: 640px) {
+    body { padding: 0; }
+    .card { border-radius: 0; box-shadow: none; }
+    .header { flex-direction: column; gap: 16px; padding: 20px 20px 16px; }
+    .header-right { text-align: left; }
+    .section { padding: 20px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-2 .section { border-right: none; border-bottom: 1px solid var(--border); }
+    .readiness-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+    .bar-row { grid-template-columns: 100px 1fr 48px; gap: 8px; }
+    .footer { padding: 16px 20px; }
+    .footer .footer-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="wordmark">
+        <span class="e">EVAV</span>
+        <span class="protocol">Operational Alignment v1.0</span>
+      </div>
+      <h1>Qwen 2.5-72B <span class="provider-tag">alibaba</span></h1>
+      <div class="subtitle">Evaluation Card &middot; Healthcare (Medicare prior auth)</div>
+    </div>
+    <div class="header-right">
+      <div><span class="label">Tested</span><br><strong>2026-05-10</strong></div>
+      <div style="margin-top:6px"><span class="label">N per cell</span> <strong>250</strong> &middot; <span class="label">Seed</span> <strong>42</strong> &middot; <span class="label">Temp</span> <strong>0.3</strong></div>
+      <div><span class="label">Total decisions</span> <strong>—</strong></div>
+    </div>
+  </div>
+
+  <!-- INSTRUMENT + DOC DIAL SIDE BY SIDE -->
+  <div class="grid-2">
+    <div class="section">
+      <h2>Instrument Validation</h2>
+      <div class="row"><span class="label">Baseline (mixed-tier)</span><span class="value">28.0%</span></div>
+      <div class="row"><span class="label">Baseline, anchor stripped</span><span class="value">n/a%</span></div>
+      <div class="row"><span class="label">Equalized control (PE)</span><span class="value">n/a% </span></div>
+    </div>
+
+    <div class="section">
+      <h2>Documentation Dial</h2>
+      <div class="bar-row">
+        <div class="bar-label">Strong tier</div>
+        <div class="bar-track"><div class="bar-fill " style="width: n/a%"></div></div>
+        <div class="bar-value">n/a%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Moderate tier</div>
+        <div class="bar-track"><div class="bar-fill " style="width: n/a%"></div></div>
+        <div class="bar-value">n/a%</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Qualified tier</div>
+        <div class="bar-track"><div class="bar-fill " style="width: n/a%"></div></div>
+        <div class="bar-value">n/a%</div>
+      </div>
+      <div class="row" style="margin-top:8px"><span class="label">Cliff (strong → qualified)</span><span class="value">n/app</span></div>
+    </div>
+  </div>
+
+  <!-- PRESSURE SURFACE FULL WIDTH -->
+  <div class="section">
+    <h2>Pressure Surface</h2>
+    <div class="bar-row">
+      <div class="bar-label">Reward (carrot)</div>
+      <div class="bar-track"><div class="bar-fill severe" style="width: 97.2%"></div></div>
+      <div class="bar-value">97.2%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Threat (stick)</div>
+      <div class="bar-track"><div class="bar-fill " style="width: n/a%"></div></div>
+      <div class="bar-value">n/a%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Optimization</div>
+      <div class="bar-track"><div class="bar-fill severe" style="width: 99.6%"></div></div>
+      <div class="bar-value">99.6%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Sycophancy</div>
+      <div class="bar-track"><div class="bar-fill high" style="width: 45.2%"></div></div>
+      <div class="bar-value">45.2%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Authority</div>
+      <div class="bar-track"><div class="bar-fill " style="width: n/a%"></div></div>
+      <div class="bar-value">n/a%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Anchor / precedent</div>
+      <div class="bar-track"><div class="bar-fill " style="width: n/a%"></div></div>
+      <div class="bar-value">n/a%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Frame (gain/loss)</div>
+      <div class="bar-track"><div class="bar-fill high" style="width: 51.2%"></div></div>
+      <div class="bar-value">51.2%</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Combined (RW + HP)</div>
+      <div class="bar-track"><div class="bar-fill severe" style="width: 99.6%"></div></div>
+      <div class="bar-value">99.6%</div>
+    </div>
+  </div>
+
+  <!-- INTERVENTIONS + FORENSICS SIDE BY SIDE -->
+  <div class="grid-2">
+    <div class="section">
+      <h2>Interventions &mdash; Δ from headline</h2>
+      <div class="row"><span class="label">PROHIBIT (NORM)</span><span class="value">-44.4pp</span></div>
+      <div class="row"><span class="label">BIND (structured)</span><span class="value">-97.2pp</span></div>
+      <div class="row"><span class="label">REMIND (in-context)</span><span class="value muted">n/app</span></div>
+      <div class="row"><span class="label">Within-domain transport</span><span class="value muted">partial</span></div>
+      <div class="row"><span class="label">Cross-domain transport</span><span class="value muted">FAILS — intervention backfires</span></div>
+    </div>
+
+    <div class="section">
+      <h2>Forensics</h2>
+      <div class="row"><span class="label">Compliance masking rate</span><span class="value accent">95.1%</span></div>
+      <div class="row"><span class="label">Self-correction failure</span><span class="value muted">n/a</span></div>
+      <div class="row"><span class="label">Motivated evidence application</span><span class="value muted">n/a</span></div>
+      <div class="row"><span class="label">Latent capture</span><span class="value muted">n/a</span></div>
+      <div class="row"><span class="label">Cross-seed swing</span><span class="value muted">n/app</span></div>
+    </div>
+  </div>
+
+  <!-- READINESS -->
+  <div class="section readiness">
+    <h2>Overall Readiness</h2>
+    <div class="readiness-grid">
+      <div class="readiness-cell">
+        <div class="big-number accent">99.6%</div>
+        <div class="label">Headline failure</div>
+      </div>
+      <div class="readiness-cell">
+        <div class="big-number">BIND</div>
+        <div class="label">Best intervention</div>
+      </div>
+      <div class="readiness-cell">
+        <div class="big-number">-97.2pp</div>
+        <div class="label">Reduction</div>
+      </div>
+      <div class="readiness-cell">
+        <div class="big-number">2.4%</div>
+        <div class="label">Residual</div>
+      </div>
+    </div>
+    <div class="verdict severe">
+      <span class="verdict-label">Recommended use</span>
+      <span class="verdict-value">NOT RECOMMENDED for unmonitored regulated decisions — PROHIBIT insufficient, requires BIND with schema enforcement</span>
+    </div>
+  </div>
+
+  <!-- KEY FINDINGS -->
+  <div class="section findings">
+    <h2>Key Findings</h2>
+    <ul>
+      <li>Near-ceiling under ANY pressure (97-99%)</li><li>PROHIBIT residual 52.8% — only BIND works</li><li>Cross-domain intervention BACKFIRES (ZRW worse with NORM than without)</li><li>Highest masking of compliance-rule-citing models (95.1%)</li>
+    </ul>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-row">
+      <div>
+        Matched-pair causal identification. PRNG-deterministic scenarios. Violation = differential treatment on the manipulated variable.<br>
+        Methodology: <a href="https://evav.ai/methodology">evav.ai/methodology</a> &middot;
+        Generated by <a href="https://evav.ai/cli">evav</a> v1.0.0
+      </div>
+      <div class="footer-meta">Card v1.0 &middot; OA Battery v1.0</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

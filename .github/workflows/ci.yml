@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "products/cli/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "products/cli/**"
+
+jobs:
+  test:
+    name: test (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+    defaults:
+      run:
+        working-directory: products/cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check oa_bench/
+      - name: Test
+        env:
+          OA_STAGE2_CLASSIFIER: "0"   # skip LLM classifier in CI
+        run: pytest tests/ -v
+
+  smoke-validate:
+    name: validate example configs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: products/cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e .
+      - run: oa-bench validate examples/battery.healthcare.example.json
+      - run: oa-bench validate examples/battery.lending.example.json
+      - run: oa-bench validate examples/battery.trading.example.json

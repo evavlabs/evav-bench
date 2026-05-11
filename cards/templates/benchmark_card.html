@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EVAV Operational Alignment Benchmark — {{ domain_title }}</title>
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --surface-subtle: #F5F5F2;
+    --border: #E7E5E4;
+    --border-strong: #D6D3D1;
+    --text: #0A0A0A;
+    --text-secondary: #18181B;
+    --text-muted: #71717A;
+    --accent: #CC5500;
+    --accent-text: #8C3A00;
+    --accent-subtle: #FCE7D4;
+    --grid: #F0EFED;
+    --row-hover: #FAFAF8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', 'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 16px;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv11';
+  }
+  .card {
+    max-width: 1280px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 28px 36px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 32px;
+  }
+  .wordmark {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .wordmark .e { color: var(--accent); }
+  .wordmark .protocol {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-left: 8px;
+    padding-left: 10px;
+    border-left: 1px solid var(--border);
+  }
+  .header h1 {
+    margin: 0 0 4px;
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .header .subtitle {
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .header-right {
+    text-align: right;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    font-feature-settings: 'tnum';
+  }
+  .header-right strong { color: var(--text); font-weight: 500; }
+  .header-right .label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* MATRIX TABLE */
+  .matrix-wrapper {
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+  }
+  table.matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-feature-settings: 'tnum';
+  }
+  table.matrix th,
+  table.matrix td {
+    padding: 9px 12px;
+    text-align: right;
+    border-bottom: 1px solid var(--grid);
+    vertical-align: middle;
+  }
+  table.matrix th.cell-label,
+  table.matrix td.cell-label {
+    text-align: left;
+    padding-left: 36px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  table.matrix th.cell-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  table.matrix thead th {
+    background: var(--surface-subtle);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 11px;
+    border-bottom: 2px solid var(--border-strong);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    white-space: nowrap;
+  }
+  table.matrix thead th .model-name {
+    display: block;
+    font-size: 12px;
+    line-height: 1.1;
+  }
+  table.matrix thead th .provider {
+    display: block;
+    font-size: 9px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  table.matrix tr.section-divider th,
+  table.matrix tr.section-divider td {
+    background: var(--surface-subtle);
+    border-top: 1px solid var(--border-strong);
+    border-bottom: 1px solid var(--border-strong);
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  table.matrix tr.data:hover td { background: var(--row-hover); }
+  table.matrix td.value {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--text);
+  }
+  table.matrix td.value.muted { color: var(--text-muted); font-weight: 400; }
+  table.matrix td.value.high { color: var(--accent); font-weight: 600; }
+  table.matrix td.value.severe { color: var(--accent-text); font-weight: 700; background: var(--accent-subtle); }
+  table.matrix td.value.improvement { color: var(--accent); }
+  table.matrix td.value.empty { color: #D6D3D1; }
+
+  /* SUMMARY PANELS */
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-cell {
+    padding: 24px 28px;
+    border-right: 1px solid var(--border);
+  }
+  .summary-cell:last-child { border-right: none; }
+  .summary-cell .label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .summary-cell .model {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .summary-cell .value {
+    font-size: 22px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    margin-bottom: 4px;
+    font-feature-settings: 'tnum';
+  }
+  .summary-cell .caption {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* INTERPRETATION */
+  .findings {
+    padding: 24px 36px;
+    background: var(--surface);
+  }
+  .findings h2 {
+    margin: 0 0 16px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+  }
+  .findings .finding {
+    padding: 12px 0 12px 18px;
+    border-bottom: 1px solid var(--grid);
+    position: relative;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    align-items: baseline;
+  }
+  .findings .finding:last-child { border-bottom: none; }
+  .findings .finding::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 19px;
+    width: 8px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .findings .finding-headline {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .findings .finding-body {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  /* FOOTER */
+  .footer {
+    padding: 16px 36px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-subtle);
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer a { color: var(--accent-text); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 900px) {
+    .summary-row { grid-template-columns: 1fr 1fr; }
+    .summary-cell:nth-child(2) { border-right: none; }
+    .summary-cell:nth-child(1), .summary-cell:nth-child(2) { border-bottom: 1px solid var(--border); }
+    .findings .finding { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="header">
+    <div>
+      <div class="wordmark">
+        <span class="e">EVAV</span>
+        <span class="protocol">Operational Alignment Benchmark v1.0</span>
+      </div>
+      <h1>Healthcare — Medicare Prior Authorization</h1>
+      <div class="subtitle">Cross-model benchmark &middot; 8 frontier models &middot; matched-pair causal identification</div>
+    </div>
+    <div class="header-right">
+      <div><span class="label">Reference corpus</span> <strong>209,072 decisions</strong></div>
+      <div><span class="label">Seed</span> <strong>42</strong> &middot; <span class="label">Temp</span> <strong>0.3</strong> &middot; <span class="label">N/cell</span> <strong>100-250</strong></div>
+      <div><span class="label">Generated</span> <strong>2026-05-11</strong></div>
+    </div>
+  </div>
+
+  <!-- HEADLINE SUMMARY: 4 most striking comparative facts -->
+  <div class="summary-row">
+    <div class="summary-cell">
+      <div class="label">Safest baseline</div>
+      <div class="model">Llama 3.3 70B</div>
+      <div class="value">0.0%</div>
+      <div class="caption">Zero baseline default failure. Lowest headline max (9.6%).</div>
+    </div>
+    <div class="summary-cell">
+      <div class="label">Worst headline</div>
+      <div class="model">Llama 4 Maverick</div>
+      <div class="value">100%</div>
+      <div class="caption">Baseline Default Failure — violates without pressure. PROHIBIT has zero effect.</div>
+    </div>
+    <div class="summary-cell">
+      <div class="label">Largest doc-tier cliff</div>
+      <div class="model">Claude Sonnet 4</div>
+      <div class="value">100pp</div>
+      <div class="caption">0% on strong-tier documentation → 100% on qualified-tier.</div>
+    </div>
+    <div class="summary-cell">
+      <div class="label">Highest masking rate</div>
+      <div class="model">Llama 4 Maverick</div>
+      <div class="value">98.2%</div>
+      <div class="caption">Of all violations, the share that would pass text-based compliance review.</div>
+    </div>
+  </div>
+
+  <!-- THE MATRIX -->
+  <div class="matrix-wrapper">
+    <table class="matrix">
+      <thead>
+        <tr>
+          <th class="cell-label">Test cell</th>
+          <th><span class="model-name">Llama 3.3</span><span class="provider">meta · 70B</span></th>
+          <th><span class="model-name">Claude</span><span class="provider">anthropic · Sonnet 4</span></th>
+          <th><span class="model-name">GPT-4o</span><span class="provider">openai</span></th>
+          <th><span class="model-name">Gemini</span><span class="provider">google · 2.5 Pro</span></th>
+          <th><span class="model-name">DeepSeek</span><span class="provider">deepseek · V3</span></th>
+          <th><span class="model-name">Gemma</span><span class="provider">google · 3 27B</span></th>
+          <th><span class="model-name">Qwen</span><span class="provider">alibaba · 2.5 72B</span></th>
+          <th><span class="model-name">Maverick</span><span class="provider">meta · Llama 4</span></th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr class="section-divider"><th class="cell-label" colspan="9">Instrument validation</th></tr>
+        <tr class="data">
+          <td class="cell-label">A1 &middot; Baseline (mixed-tier)</td>
+          <td class="value">0.0%</td>
+          <td class="value">5.2%</td>
+          <td class="value">8.1%</td>
+          <td class="value">2.9%</td>
+          <td class="value high">28.8%</td>
+          <td class="value high">39.0%</td>
+          <td class="value high">28.0%</td>
+          <td class="value severe">100%</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">A5 &middot; Baseline, anchor stripped</td>
+          <td class="value empty">—</td>
+          <td class="value">4.0%</td>
+          <td class="value">0.9%</td>
+          <td class="value empty">—</td>
+          <td class="value">13.2%</td>
+          <td class="value empty">—</td>
+          <td class="value">17.6%</td>
+          <td class="value severe">100%</td>
+        </tr>
+
+        <tr class="section-divider"><th class="cell-label" colspan="9">Pressure surface</th></tr>
+        <tr class="data">
+          <td class="cell-label">B1 &middot; Reward (carrot)</td>
+          <td class="value empty">—</td>
+          <td class="value high">47.6%</td>
+          <td class="value">13.6%</td>
+          <td class="value high">45.2%</td>
+          <td class="value severe">94.0%</td>
+          <td class="value high">51.0%</td>
+          <td class="value severe">97.2%</td>
+          <td class="value severe">100%</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">B2 &middot; Threat (stick)</td>
+          <td class="value">9.6%</td>
+          <td class="value high">63.2%</td>
+          <td class="value severe">73.2%</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value severe">100%</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">B3 &middot; Optimization</td>
+          <td class="value">0.0%</td>
+          <td class="value high">67.6%</td>
+          <td class="value">20.6%</td>
+          <td class="value high">62.1%</td>
+          <td class="value severe">81.2%</td>
+          <td class="value high">60.6%</td>
+          <td class="value severe">99.6%</td>
+          <td class="value severe">100%</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">B4 &middot; Sycophancy</td>
+          <td class="value">0.0%</td>
+          <td class="value">0.4%</td>
+          <td class="value">26.0%</td>
+          <td class="value">5.8%</td>
+          <td class="value">2.4%</td>
+          <td class="value high">51.6%</td>
+          <td class="value high">45.2%</td>
+          <td class="value severe">100%</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">B5 &middot; Authority bias</td>
+          <td class="value empty">—</td>
+          <td class="value high">42.0%</td>
+          <td class="value">4.1%</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value">20.0%</td>
+          <td class="value severe">100%</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">B6 &middot; Anchor / precedent</td>
+          <td class="value empty">—</td>
+          <td class="value">2.0%</td>
+          <td class="value">0.0%</td>
+          <td class="value">0.0%</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value">8.0%</td>
+          <td class="value empty">—</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">B7 &middot; Frame (gain/loss)</td>
+          <td class="value">2.8%</td>
+          <td class="value">0.0%</td>
+          <td class="value">24.8%</td>
+          <td class="value">16.4%</td>
+          <td class="value">0.8%</td>
+          <td class="value empty">—</td>
+          <td class="value high">51.2%</td>
+          <td class="value empty">—</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">C1 &middot; Combined (RW + HP)</td>
+          <td class="value">9.6%</td>
+          <td class="value high">63.2%</td>
+          <td class="value severe">77.5%</td>
+          <td class="value severe">82.7%</td>
+          <td class="value severe">87.6%</td>
+          <td class="value severe">93.0%</td>
+          <td class="value severe">99.6%</td>
+          <td class="value severe">100%</td>
+        </tr>
+
+        <tr class="section-divider"><th class="cell-label" colspan="9">Documentation dial (B1 stratified by tier)</th></tr>
+        <tr class="data">
+          <td class="cell-label">D1 &middot; Strong tier</td>
+          <td class="value empty">—</td>
+          <td class="value">0.0%</td>
+          <td class="value">~0%</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value high">~50%</td>
+          <td class="value severe">100%</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">D2 &middot; Moderate tier</td>
+          <td class="value empty">—</td>
+          <td class="value severe">98.0%</td>
+          <td class="value">~25%</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value severe">~100%</td>
+          <td class="value severe">100%</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">D3 &middot; Qualified tier</td>
+          <td class="value empty">—</td>
+          <td class="value severe">100%</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value empty">—</td>
+          <td class="value severe">100%</td>
+        </tr>
+
+        <tr class="section-divider"><th class="cell-label" colspan="9">Interventions (Δ from B1 reward headline)</th></tr>
+        <tr class="data">
+          <td class="cell-label">G1 &middot; PROHIBIT (Δpp)</td>
+          <td class="value empty">—</td>
+          <td class="value improvement">−47.6</td>
+          <td class="value improvement">−13.6</td>
+          <td class="value improvement">−45.2</td>
+          <td class="value improvement">−94.0</td>
+          <td class="value improvement">−38.0</td>
+          <td class="value improvement">−44.4</td>
+          <td class="value muted">0.0</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">G2 &middot; BIND (Δpp)</td>
+          <td class="value empty">—</td>
+          <td class="value improvement">−47.6</td>
+          <td class="value improvement">−13.6</td>
+          <td class="value improvement">−45.2</td>
+          <td class="value improvement">−94.0</td>
+          <td class="value empty">—</td>
+          <td class="value improvement">−97.2</td>
+          <td class="value improvement">−63.8</td>
+        </tr>
+
+        <tr class="section-divider"><th class="cell-label" colspan="9">Forensics</th></tr>
+        <tr class="data">
+          <td class="cell-label">Compliance masking rate</td>
+          <td class="value high">82.6%</td>
+          <td class="value">60.2%</td>
+          <td class="value high">71.8%</td>
+          <td class="value">69.6%</td>
+          <td class="value high">86.8%</td>
+          <td class="value high">85.2%</td>
+          <td class="value severe">95.1%</td>
+          <td class="value severe">98.2%</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">Cross-seed swing</td>
+          <td class="value muted">—</td>
+          <td class="value">~12pp</td>
+          <td class="value muted">—</td>
+          <td class="value muted">—</td>
+          <td class="value severe">44pp</td>
+          <td class="value muted">—</td>
+          <td class="value">~1pp</td>
+          <td class="value muted">—</td>
+        </tr>
+        <tr class="data">
+          <td class="cell-label">Anchor-removal direction</td>
+          <td class="value muted">—</td>
+          <td class="value">worsens</td>
+          <td class="value improvement">improves</td>
+          <td class="value">worsens</td>
+          <td class="value improvement">improves</td>
+          <td class="value muted">—</td>
+          <td class="value muted">neutral</td>
+          <td class="value muted">—</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- KEY OBSERVATIONS — what makes this a benchmark rather than 8 reports -->
+  <div class="findings">
+    <h2>Cross-model observations</h2>
+
+    <div class="finding">
+      <div class="finding-headline">Documentation tier is the dominant axis</div>
+      <div class="finding-body">
+        Five of eight models show 30+ percentage-point swings between strong-tier and moderate-tier input documentation, with identical pressure. Claude exhibits the most extreme cliff (0% → 98%). Upstream LLM-generated documentation can therefore flip downstream behavior wholesale without any pressure changing.
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-headline">Pressure asymmetry is model-specific</div>
+      <div class="finding-body">
+        GPT-4o is uniquely threat-sensitive (73% under stick vs 14% under carrot — 5x asymmetry). Claude treats both pressures symmetrically (~48% / ~63%). DeepSeek folds equally to either (~94% / similar). No general "stick is worse than carrot" rule.
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-headline">Anchor-removal effects invert by model</div>
+      <div class="finding-body">
+        Removing population-norm anchors helps GPT-4o (Combined drops 36pp) and DeepSeek (15pp). Same removal hurts Claude (HOP rises 17pp) because the model substitutes its own training priors when statistical context is absent. Compliance teams cannot make a universal "strip the anchor" recommendation.
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-headline">PROHIBIT works for most, fails for two</div>
+      <div class="finding-body">
+        Single-rule prohibition drops 6 of 8 models to ≤13% residual on B1. It fails on Maverick (zero effect) and is partial on Qwen (53% residual). Composite interventions (PROHIBIT + BIND) are required for those two.
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-headline">Compliance masking is universal</div>
+      <div class="finding-body">
+        Even the safest model (Llama 3.3) produces text that would pass conventional compliance review in 82.6% of violations. The masking rate exceeds 95% in three models. Text-based monitoring is insufficient; matched-pair confirmation is required at production scale.
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-headline">Cross-seed instability is rare but extreme when present</div>
+      <div class="finding-body">
+        DeepSeek V3 swings 50–94% on the same configuration with only the seed changing. Most other models hold within 5pp. Single-seed evaluations miss instability of this magnitude — only multi-seed audits surface it.
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>
+      Sortable / filterable / cell-drillable view at <a href="https://evav.ai/leaderboard">evav.ai/leaderboard</a>.
+      Methodology: matched-pair causal identification &middot; PRNG-deterministic scenarios.<br>
+      Full methodology: <a href="https://evav.ai/methodology">evav.ai/methodology</a> &middot; Paper: <a href="https://arxiv.org/abs/2026.xxxxx">NeurIPS 2026</a>
+    </div>
+    <div style="text-align:right">Benchmark Card v1.0 &middot; OA Battery v1.0</div>
+  </div>
+
+</div>
+</body>
+</html>

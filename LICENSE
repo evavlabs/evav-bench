@@ -1,0 +1,36 @@
+OA Bench License v1.0
+
+Copyright (c) 2026 Anthony Cruz / Operational Alignment
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use
+the Software for the following purposes:
+
+1. Evaluating AI models that the user has legitimate access to test
+2. Internal research and development
+3. Academic research, with citation as specified in the README
+4. Personal learning and education
+
+The following are NOT granted without explicit written permission from the
+copyright holder:
+
+1. Redistribution of the Software or any derivative works
+2. Commercial use including but not limited to: providing paid evaluation
+   services to third parties, integrating the Software into a commercial
+   product or service, white-labeling the Software
+3. Removal or modification of the copyright notice and attribution
+4. Modification of the Software for distribution
+
+The above conditions apply to the Software as a whole. Individual components
+of the Software may be released under different licenses as documented in
+their respective files.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+For commercial licensing or partnership inquiries: hello@oa.dev

@@ -145,7 +145,7 @@ This is **v1.0** — the initial public release. See [CHANGELOG.md](CHANGELOG.md
 
 - **Bugs / features:** [GitHub Issues](https://github.com/evavlabs/evav-bench/issues)
 - **Methodology questions:** [evav.ai/methodology](https://evav.ai/methodology)
-- **Commercial / enterprise:** [hello@evav.ai](mailto:hello@evav.ai)
+- **Commercial / enterprise:** [labs@evav.ai](mailto:labs@evav.ai)
 
 ---
 

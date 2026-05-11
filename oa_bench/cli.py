@@ -31,13 +31,13 @@ def _load_config(path: Path) -> BatteryConfig:
 
 
 @click.group()
-@click.version_option(__version__, prog_name="EVAV", message="EVAV v%(version)s — Operational Alignment Battery")
+@click.version_option(__version__, prog_name="oa-bench")
 @click.option("--log-level", default=None,
               help="Override OA_LOG_LEVEL env var (DEBUG / INFO / WARNING / ERROR).")
 def cli(log_level: str | None):
-    """EVAV — Operational Alignment Battery CLI.
+    """OA Evaluation Battery CLI.
 
-    Domain-agnostic matched-pair AI deployment-safety auditing.
+    Domain-agnostic matched-pair deployment-safety auditing.
 
     See cli/README.md for full documentation.
     """
@@ -284,6 +284,123 @@ def supabase_upload(output_dir: Path):
     except Exception as e:
         console.print(f"[red]Upload failed:[/red] {type(e).__name__}: {e}")
         sys.exit(3)
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Operational alignment modules — beyond core matched-pair pressure battery
+# ────────────────────────────────────────────────────────────────────────────
+
+@cli.command()
+@click.option("--provider", required=True, type=click.Choice(["anthropic", "openai", "google", "deepseek", "openrouter"]))
+@click.option("--model", "model_name", required=True)
+@click.option("--source", default="builtin", help="Dataset source: builtin, truthfulqa, or path to JSON")
+@click.option("--pressure-overlay", default=None, help="Optional pressure narrative to test hallucination x pressure")
+@click.option("--output", default="hallucination.json", type=click.Path(path_type=Path))
+def hallucination(provider, model_name, source, pressure_overlay, output):
+    """Test for factual hallucination, with optional pressure overlay."""
+    from oa_bench.battery import ModelConfig
+    from oa_bench.models import get_adapter
+    from oa_bench.modules.hallucination import run_hallucination_test
+
+    cfg = ModelConfig(provider=provider, name=model_name)
+    model = get_adapter(cfg)
+    console.print(f"Running hallucination test against {provider}/{model_name}...")
+    result = run_hallucination_test(model, source=source, pressure_overlay=pressure_overlay)
+    output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    console.print(f"[green][ok][/green] Results: {output}")
+    if "hallucination_rate_pct" in result:
+        console.print(f"  Hallucination rate: {result['hallucination_rate_pct']}%")
+        console.print(f"  Refusal rate:       {result['refusal_rate_pct']}%")
+        console.print(f"  Correct rate:       {result['correct_rate_pct']}%")
+
+
+@cli.command()
+@click.option("--provider", required=True, type=click.Choice(["anthropic", "openai", "google", "deepseek", "openrouter"]))
+@click.option("--model", "model_name", required=True)
+@click.option("--mode", default="auto", type=click.Choice(["auto", "garak", "builtin"]),
+              help="auto picks garak if installed, else builtin")
+@click.option("--output", default="adversarial.json", type=click.Path(path_type=Path))
+def adversarial(provider, model_name, mode, output):
+    """Test prompt-injection / jailbreak resistance. Wraps NVIDIA garak if installed."""
+    from oa_bench.battery import ModelConfig
+    from oa_bench.models import get_adapter
+    from oa_bench.modules.adversarial import run_adversarial
+
+    cfg = ModelConfig(provider=provider, name=model_name)
+    model = get_adapter(cfg)
+    console.print(f"Running adversarial test against {provider}/{model_name} (mode={mode})...")
+    result = run_adversarial(model, mode=mode, provider=provider, name=model_name)
+    output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    console.print(f"[green][ok][/green] Results: {output}")
+    if "overall_attack_success_rate_pct" in result:
+        console.print(f"  Attack success rate: {result['overall_attack_success_rate_pct']}%")
+
+
+@cli.command()
+@click.option("--provider", required=True, type=click.Choice(["anthropic", "openai", "google", "deepseek", "openrouter"]))
+@click.option("--model", "model_name", required=True)
+@click.option("--pressure-overlay", default=None)
+@click.option("--output", default="refusal.json", type=click.Path(path_type=Path))
+def refusal(provider, model_name, pressure_overlay, output):
+    """Test refusal calibration -- over-refusal of legitimate vs under-refusal of harmful."""
+    from oa_bench.battery import ModelConfig
+    from oa_bench.models import get_adapter
+    from oa_bench.modules.refusal import run_refusal_test
+
+    cfg = ModelConfig(provider=provider, name=model_name)
+    model = get_adapter(cfg)
+    console.print(f"Running refusal calibration test against {provider}/{model_name}...")
+    result = run_refusal_test(model, pressure_overlay=pressure_overlay)
+    output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    console.print(f"[green][ok][/green] Results: {output}")
+    if "over_refusal_rate_pct" in result:
+        console.print(f"  Over-refusal (safe refused):    {result['over_refusal_rate_pct']}%")
+        console.print(f"  Under-refusal (harmful accepted): {result['under_refusal_rate_pct']}%")
+        console.print(f"  Overall accuracy:                  {result['overall_accuracy_pct']}%")
+
+
+@cli.command()
+@click.option("--provider", required=True, type=click.Choice(["anthropic", "openai", "google", "deepseek", "openrouter"]))
+@click.option("--model", "model_name", required=True)
+@click.option("--pressure-overlay", default=None)
+@click.option("--output", default="privacy.json", type=click.Path(path_type=Path))
+def privacy(provider, model_name, pressure_overlay, output):
+    """Test PII / privacy leakage. Wraps Microsoft Presidio if installed."""
+    from oa_bench.battery import ModelConfig
+    from oa_bench.models import get_adapter
+    from oa_bench.modules.privacy import run_privacy_test
+
+    cfg = ModelConfig(provider=provider, name=model_name)
+    model = get_adapter(cfg)
+    console.print(f"Running privacy test against {provider}/{model_name}...")
+    result = run_privacy_test(model, pressure_overlay=pressure_overlay)
+    output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    console.print(f"[green][ok][/green] Results: {output}")
+    if "overall_leak_rate_pct" in result:
+        console.print(f"  PII leak rate: {result['overall_leak_rate_pct']}%")
+
+
+@cli.command(name="schema-check")
+@click.argument("results_dir", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.option("--schema", default=None, type=click.Path(path_type=Path),
+              help="JSON file defining expected schema. Defaults to healthcare {decision, reasoning}.")
+@click.option("--output", default="schema_fidelity.json", type=click.Path(path_type=Path))
+def schema_check(results_dir, schema, output):
+    """Analyze schema fidelity -- does the model break output format under pressure?"""
+    from oa_bench.modules.schema_fidelity import analyze_results_directory
+
+    if schema:
+        expected = json.loads(Path(schema).read_text(encoding="utf-8"))
+    else:
+        expected = {"decision": "string", "reasoning": "string"}
+
+    result = analyze_results_directory(results_dir, expected)
+    output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    console.print(f"[green][ok][/green] Results: {output}")
+    if "overall_schema_break_rate_pct" in result:
+        console.print(f"  Schema break rate: {result['overall_schema_break_rate_pct']}%")
+        if result.get("high_break_cells"):
+            console.print(f"  Cells with >10% schema breaks: {len(result['high_break_cells'])}")
 
 
 def main():

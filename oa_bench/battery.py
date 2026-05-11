@@ -26,23 +26,25 @@ from pydantic import BaseModel, Field, field_validator
 
 PressureType = Literal[
     "none",
-    # Incentive pressures (operator-imposed motivation)
+    # Incentive pressures (operator-imposed motivation) — empirically validated
     "RW",   # Reward (carrot)
     "HP",   # Threat (stick)
     "OP",   # Optimization / KPI framing
     "MR",   # Combined reward + threat
-    # Social pressures (stakeholder-imposed)
+    # Social pressures (stakeholder-imposed) — empirically validated
     "SY",   # Sycophancy / advocacy
     "AU",   # Authority bias
-    # Cognitive pressures (input-quality)
+    # Cognitive pressures (input-quality) — empirically validated
     "AN",   # Anchor / fake precedent
-    "FM",   # Frame / gain-loss
-    # Environmental pressures (context-imposed)
-    "EN",   # Environmental regime (bull market, season, surge)
-    "TM",   # Time pressure (rushed vs deliberative)
-    "PR",   # Persistence (same case raised multiple times)
-    "VL",   # Volume / queue depth pressure
-    "RC",   # Recency (just decided a similar case)
+    "FM",   # Frame / gain-loss (same value, different sign)
+    # Environmental pressures (context-imposed) — EN validated, others theoretical
+    "EN",   # Environmental regime (bull market, season, surge) — validated in trading
+    "TM",   # Time pressure (rushed vs deliberative) — theoretical
+    "PR",   # Persistence (same case raised multiple times) — theoretical
+    "VL",   # Volume / queue depth pressure — theoretical
+    "RC",   # Recency (just decided a similar case) — theoretical
+    # v1.1 candidates (NOT YET — collect public /run data first to justify):
+    #   ID, HY, LA, SP, CF
 ]
 DocTier = Literal["S", "M", "Q", "X"]  # Strong, Moderate, Qualified, miXed
 AnchorPresence = Literal["+A", "-A"]
@@ -100,6 +102,43 @@ class ScopeConfig(BaseModel):
         if invalid:
             raise ValueError(f"Invalid groups: {invalid}. Must be subset of {valid}")
         return v
+
+
+# Pre-defined scope presets — used by CLI --scope shorthand
+SCOPE_PRESETS = {
+    "minimal": {
+        "groups": ["A", "B"],
+        "n_per_cell": 30,
+        "seeds": [42],
+        "temps": [0.3],
+        "_description": "Ultra-cheap first run (~5 min, ~$0.30-3 depending on provider). 2 baselines + headline pressures only.",
+        "_estimated_cells": 5,
+    },
+    "quick": {
+        "groups": ["A", "B"],
+        "n_per_cell": 100,
+        "seeds": [42],
+        "temps": [0.3],
+        "_description": "Public-scorecard quick run (~10-30 min, ~$2-15). All baselines + all pressure types.",
+        "_estimated_cells": 21,
+    },
+    "standard": {
+        "groups": ["A", "B", "C", "D", "E", "G"],
+        "n_per_cell": 100,
+        "seeds": [42],
+        "temps": [0.3],
+        "_description": "Standard audit (~1-3 hrs, ~$10-50). Adds composition, doc tier, anchor sensitivity, interventions.",
+        "_estimated_cells": 50,
+    },
+    "full": {
+        "groups": ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"],
+        "n_per_cell": 100,
+        "seeds": [42, 43, 44, 45],
+        "temps": [0.0, 0.3, 0.5, 0.7],
+        "_description": "Full audit with robustness sweeps (~4-16 hrs, ~$50-300).",
+        "_estimated_cells": 80,
+    },
+}
 
 
 class BatteryConfig(BaseModel):

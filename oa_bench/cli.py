@@ -98,6 +98,8 @@ def oa_estimate(cfg, cells):
 @click.argument("config_path", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option("--output", "-o", required=True, type=click.Path(path_type=Path),
               help="Output directory for per-cell results.")
+@click.option("--scope", type=click.Choice(["minimal", "quick", "standard", "full"]), default=None,
+              help="Override config scope with a preset (minimal/quick/standard/full).")
 @click.option("--resume/--no-resume", default=True,
               help="Skip cells that have already completed.")
 @click.option("--supabase/--local", default=False,
@@ -107,9 +109,14 @@ def oa_estimate(cfg, cells):
               help="Concurrent workers. v1 supports 1 only; v1.1 will support N>1.")
 @click.option("--dry-run/--no-dry-run", default=False,
               help="Validate, enumerate, and estimate cost without making API calls.")
-def run(config_path: Path, output: Path, resume: bool, supabase: bool, workers: int, dry_run: bool):
+def run(config_path: Path, output: Path, scope: str | None, resume: bool, supabase: bool, workers: int, dry_run: bool):
     """Run a battery and write per-cell results to OUTPUT."""
     cfg = _load_config(config_path)
+    if scope:
+        from oa_bench.battery import SCOPE_PRESETS, ScopeConfig
+        preset = {k: v for k, v in SCOPE_PRESETS[scope].items() if not k.startswith("_")}
+        cfg.scope = ScopeConfig(**preset)
+        console.print(f"[bold]Scope override:[/bold] {scope}  -- {SCOPE_PRESETS[scope]['_description']}")
     cells = enumerate_cells(cfg)
     output.mkdir(parents=True, exist_ok=True)
 
@@ -465,6 +472,100 @@ def reasoning_trace(provider, model_name, output):
     console.print(f"[green][ok][/green] Results: {output}")
     if "overall_failure_rate_pct" in result:
         console.print(f"  Trace-faithfulness failure rate: {result['overall_failure_rate_pct']}%")
+
+
+@cli.command()
+def doctor():
+    """Environment health check — verifies API keys, optional deps, network reachability."""
+    from importlib import import_module
+    import shutil
+
+    console.print("[bold]EVAV doctor[/bold]\n")
+    rows = []
+
+    # API keys
+    keys = {
+        "ANTHROPIC_API_KEY": "Anthropic (Claude)",
+        "OPENAI_API_KEY": "OpenAI (GPT)",
+        "GOOGLE_API_KEY": "Google (Gemini)",
+        "DEEPSEEK_API_KEY": "DeepSeek",
+        "OPENROUTER_API_KEY": "OpenRouter",
+    }
+    for env, label in keys.items():
+        present = bool(os.environ.get(env))
+        rows.append((label, "set" if present else "missing", "ok" if present else "skip"))
+
+    console.print("[bold]API keys[/bold]")
+    for label, state, status in rows:
+        tag = "[green][ok][/green]" if status == "ok" else "[yellow][skip][/yellow]"
+        console.print(f"  {tag}  {label:25s}  {state}")
+
+    console.print("\n[bold]Optional dependencies[/bold]")
+    optional = [
+        ("garak", "Adversarial / jailbreak (EVAV Adversarial module)"),
+        ("presidio_analyzer", "PII detection (EVAV Privacy module)"),
+        ("fairlearn", "Bias / disparate impact (EVAV Bias module)"),
+        ("inspect_ai", "Tool safety (EVAV Tool Safety module)"),
+        ("supabase", "Supabase upload mode"),
+    ]
+    for mod, label in optional:
+        try:
+            import_module(mod)
+            console.print(f"  [green][ok][/green]   {mod:22s}  installed  ({label})")
+        except ImportError:
+            console.print(f"  [yellow][skip][/yellow] {mod:22s}  not installed  ({label})")
+
+    console.print("\n[bold]CLI versions[/bold]")
+    console.print(f"  evav CLI:         {__version__}")
+    console.print(f"  Battery version:  {__battery_version__}")
+
+    console.print("\n[bold]Recommendation[/bold]")
+    if not any(os.environ.get(k) for k in keys):
+        console.print("  [red]No API keys found.[/red] Set at least one provider key before running `evav run`.")
+    else:
+        console.print("  [green]Ready to run.[/green] Try: `evav run examples/healthcare.config.json -o ./results`.")
+
+
+@cli.command()
+@click.argument("output_dir", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.option("--format", "fmt", type=click.Choice(["json", "csv"]), default="json")
+@click.option("--output", "-o", type=click.Path(path_type=Path), required=True)
+def export(output_dir: Path, fmt: str, output: Path):
+    """Export a completed run as a single JSON or flat CSV for analysis tools."""
+    from oa_bench.card import _load_results, _aggregate_card
+    cfg, cells = _load_results(output_dir)
+    card = _aggregate_card(cfg, cells)
+    if fmt == "json":
+        output.write_text(json.dumps(card, indent=2, default=str), encoding="utf-8")
+    else:
+        import csv
+        with output.open("w", encoding="utf-8", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["cell_id", "pressure", "doc_tier", "anchor",
+                        "n_pairs", "violation_rate_pct", "masking_rate_pct"])
+            for c in cells:
+                w.writerow([c.cell_id, c.cell.pressure, c.cell.doc_tier, c.cell.anchor,
+                            c.n_pairs, c.violation_rate_pct, c.masking_rate_pct])
+    console.print(f"[green][ok][/green] Exported {output}")
+
+
+@cli.command()
+@click.argument("output_dir", type=click.Path(exists=True, file_okay=False, path_type=Path))
+def score(output_dir: Path):
+    """Compute the EVAV Score for a completed run."""
+    from oa_bench.card import _load_results, _aggregate_card
+    from oa_bench.score import score_from_card, DISCLAIMER
+
+    cfg, cells = _load_results(output_dir)
+    card = _aggregate_card(cfg, cells)
+    result = score_from_card(card)
+
+    console.print(f"\n[bold]EVAV Score: {result.overall}[/bold]  [{result.severity_band}]")
+    console.print(f"Weakest module: [yellow]{result.weakest_module}[/yellow] (score {result.weakest_module_score})\n")
+    console.print("[bold]Per-module breakdown[/bold]")
+    for m in result.module_scores:
+        console.print(f"  {m.module_name:22s} score={m.score:5.1f}  (failure rate {m.failure_rate_pct:.1f}%)")
+    console.print(f"\n[dim]{DISCLAIMER}[/dim]\n")
 
 
 def main():

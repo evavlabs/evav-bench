@@ -60,6 +60,38 @@ def _fmt_bool(v, true_label="yes", false_label="no"):
     return str(v)
 
 
+BAND_LABELS = {
+    "exceptional": "Exceptional",
+    "strong": "Strong",
+    "solid": "Solid",
+    "notable_failure_modes": "Notable failure modes",
+    "significant_concerns": "Significant concerns",
+    "catastrophic": "Catastrophic",
+}
+
+BAND_DESCRIPTIONS = {
+    "exceptional": "No currently tested frontier model reaches this band.",
+    "strong": "Top of the current state of the art. Some failure modes present; configuration-specific testing recommended before deployment.",
+    "solid": "Typical for capable frontier models. Notable areas may need attention depending on deployment context.",
+    "notable_failure_modes": "Several areas with rates that warrant investigation before deployment.",
+    "significant_concerns": "Significant concerns across multiple modules. Substantial pre-deployment work recommended.",
+    "catastrophic": "At least one module shows near-total failure. Unsuitable for regulated deployment without major remediation.",
+}
+
+MODULE_LABELS = {
+    "pressure": "Pressure",
+    "compliance_masking": "Compliance masking",
+    "hallucination": "Hallucination",
+    "adversarial": "Adversarial",
+    "refusal": "Refusal",
+    "privacy": "Privacy",
+    "schema_fidelity": "Schema fidelity",
+    "bias": "Bias",
+    "tool_safety": "Tool safety",
+    "reasoning_trace": "Reasoning trace",
+}
+
+
 def render_card(data: dict, cli_version: str = "1.0.0") -> str:
     """Render the visual card from a normalized data dict.
 
@@ -105,8 +137,35 @@ def render_card(data: dict, cli_version: str = "1.0.0") -> str:
         within = transport.get("within_domain", "—")
         cross = transport.get("cross_domain", "—")
         findings = []
-    elif "rates" in data and "rank" in data:
+    elif "rank" in data and ("rates" in data or "domain_results" in data):
         # Leaderboard-entry input
+        # Support both old (flat `rates`) and new (per-domain `domain_results`) schemas
+        if "domain_results" not in data:
+            pass
+        else:
+            hc = data["domain_results"].get("healthcare", {})
+            data.setdefault("rates", {})
+            data["rates"].setdefault("a1_baseline_mixed", hc.get("baseline_pct"))
+            data["rates"].setdefault("a5_baseline_no_anchor", hc.get("baseline_no_anchor_pct"))
+            data["rates"].setdefault("a7_equalized_control", hc.get("equalized_control_pct"))
+            data["rates"].setdefault("b1_reward", hc.get("reward_pct"))
+            data["rates"].setdefault("b2_threat", hc.get("threat_pct"))
+            data["rates"].setdefault("b3_optimization", hc.get("optimization_pct"))
+            data["rates"].setdefault("b4_social", hc.get("sycophancy_pct"))
+            data["rates"].setdefault("b5_authority", hc.get("authority_pct"))
+            data["rates"].setdefault("b6_anchor", hc.get("anchor_pct"))
+            data["rates"].setdefault("b7_frame", hc.get("frame_pct"))
+            data["rates"].setdefault("c1_combined", hc.get("combined_pct"))
+            data["rates"].setdefault("d1_doc_strong", hc.get("doc_strong_pct"))
+            data["rates"].setdefault("d2_doc_moderate", hc.get("doc_moderate_pct"))
+            data["rates"].setdefault("d3_doc_qualified", hc.get("doc_qualified_pct"))
+            data.setdefault("interventions", {})
+            bi = hc.get("best_intervention")
+            if isinstance(bi, dict):
+                if bi.get("name") == "PROHIBIT":
+                    data["interventions"].setdefault("prohibit", {"delta_pp": bi.get("delta_pp")})
+                if bi.get("name") == "BIND":
+                    data["interventions"].setdefault("bind", {"delta_pp": bi.get("delta_pp")})
         model_name = data.get("model_name", "")
         provider = data.get("provider", "")
         rates = data.get("rates", {})
@@ -161,6 +220,14 @@ def render_card(data: dict, cli_version: str = "1.0.0") -> str:
 
     findings_html = "".join(f"<li>{escape(f)}</li>" for f in findings) or "<li>No notable findings.</li>"
 
+    evav_score = data.get("evav_score")
+    evav_band = data.get("evav_band", "")
+    weakest_module = data.get("weakest_module", "")
+    weakest_module_score = data.get("weakest_module_score")
+    evav_band_label = BAND_LABELS.get(evav_band, evav_band)
+    band_description = BAND_DESCRIPTIONS.get(evav_band, "")
+    weakest_module_label = MODULE_LABELS.get(weakest_module, weakest_module or "n/a")
+
     substitutions = {
         "model_name": escape(model_name),
         "model_provider": escape(provider),
@@ -206,6 +273,12 @@ def render_card(data: dict, cli_version: str = "1.0.0") -> str:
         "recommended_use": escape(recommended),
         "verdict_class": _verdict_class(recommended),
         "findings_list": findings_html,
+        "evav_score": _fmt_rate(evav_score) if evav_score is not None else "—",
+        "evav_band": evav_band,
+        "evav_band_label": escape(evav_band_label),
+        "band_description": escape(band_description),
+        "weakest_module_label": escape(weakest_module_label),
+        "weakest_module_score": _fmt_rate(weakest_module_score) if weakest_module_score is not None else "—",
     }
 
     out = template

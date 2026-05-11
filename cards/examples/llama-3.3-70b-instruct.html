@@ -201,6 +201,82 @@
     color: var(--text);
   }
 
+  /* EVAV SCORE HERO */
+  .evav-score {
+    padding: 28px 36px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 32px;
+    align-items: center;
+  }
+  .evav-score .score-number {
+    font-size: 56px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-feature-settings: 'tnum';
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    color: var(--text);
+  }
+  .evav-score .score-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .evav-score .score-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+  }
+  .evav-score .band-chip {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    width: fit-content;
+  }
+  .evav-score .band-chip.strong       { background: #DCFCE7; color: #14532D; }
+  .evav-score .band-chip.solid        { background: #FEF3C7; color: #78350F; }
+  .evav-score .band-chip.notable_failure_modes  { background: #FED7AA; color: #7C2D12; }
+  .evav-score .band-chip.significant_concerns   { background: var(--accent-subtle); color: var(--accent-text); }
+  .evav-score .band-chip.catastrophic { background: #FECACA; color: #7F1D1D; }
+  .evav-score .band-chip.exceptional  { background: #DBEAFE; color: #1E3A8A; }
+  .evav-score .weakest {
+    text-align: right;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .evav-score .weakest .weakest-label {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .evav-score .weakest .weakest-value {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-weight: 600;
+    color: var(--text);
+    font-feature-settings: 'tnum';
+  }
+  .disclaimer {
+    padding: 14px 36px;
+    background: var(--surface-subtle);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
   /* READINESS BLOCK */
   .readiness {
     background: var(--surface-subtle);
@@ -343,6 +419,22 @@
     </div>
   </div>
 
+  <!-- EVAV SCORE HERO -->
+  <div class="evav-score">
+    <div class="score-number">67.9</div>
+    <div class="score-meta">
+      <span class="score-label">EVAV Score</span>
+      <span class="band-chip solid">Solid</span>
+    </div>
+    <div class="weakest">
+      <span class="weakest-label">Weakest module</span>
+      <span class="weakest-value">Compliance masking &middot; 17.4</span>
+    </div>
+  </div>
+  <div class="disclaimer">
+    EVAV Scores measure behavior on a general benchmark with deployment-realistic conditions. Every actual deployment has its own configuration, rules, and pressure surface. Pre-deployment testing of your specific configuration is recommended before relying on these scores for go/no-go decisions.
+  </div>
+
   <!-- INSTRUMENT + DOC DIAL SIDE BY SIDE -->
   <div class="grid-2">
     <div class="section">
@@ -383,8 +475,8 @@
     </div>
     <div class="bar-row">
       <div class="bar-label">Threat (stick)</div>
-      <div class="bar-track"><div class="bar-fill " style="width: 9.6%"></div></div>
-      <div class="bar-value">9.6%</div>
+      <div class="bar-track"><div class="bar-fill " style="width: n/a%"></div></div>
+      <div class="bar-value">n/a%</div>
     </div>
     <div class="bar-row">
       <div class="bar-label">Optimization</div>
@@ -413,8 +505,8 @@
     </div>
     <div class="bar-row">
       <div class="bar-label">Combined (RW + HP)</div>
-      <div class="bar-track"><div class="bar-fill " style="width: n/a%"></div></div>
-      <div class="bar-value">n/a%</div>
+      <div class="bar-track"><div class="bar-fill " style="width: 9.6%"></div></div>
+      <div class="bar-value">9.6%</div>
     </div>
   </div>
 
@@ -444,7 +536,7 @@
     <h2>Overall Readiness</h2>
     <div class="readiness-grid">
       <div class="readiness-cell">
-        <div class="big-number accent">9.6%</div>
+        <div class="big-number accent">90.4%</div>
         <div class="label">Headline failure</div>
       </div>
       <div class="readiness-cell">
@@ -460,9 +552,9 @@
         <div class="label">Residual</div>
       </div>
     </div>
-    <div class="verdict ">
-      <span class="verdict-label">Recommended use</span>
-      <span class="verdict-value">deploy (safest of all tested models)</span>
+    <div class="verdict">
+      <span class="verdict-label">Band</span>
+      <span class="verdict-value">Typical for capable frontier models. Notable areas may need attention depending on deployment context.</span>
     </div>
   </div>
 
@@ -470,7 +562,7 @@
   <div class="section findings">
     <h2>Key Findings</h2>
     <ul>
-      <li>Most aligned model in the corpus — single-digit violation rates even under combined pressure</li><li>Sycophancy immune</li><li>BDF baseline at 0%</li>
+      <li>Safest model in healthcare — single-digit violations even under combined pressure</li><li>DRAMATIC trading failure — 81.6% on bull market alone, 90.4% with sycophancy added</li><li>Cross-domain spread of 90.4pp — most domain-unstable model in the corpus</li><li>Holds in lending at &lt;10%</li><li>Demonstrates why single-domain evaluation is misleading</li>
     </ul>
   </div>
 
@@ -480,7 +572,7 @@
       <div>
         Matched-pair causal identification. PRNG-deterministic scenarios. Violation = differential treatment on the manipulated variable.<br>
         Methodology: <a href="https://evav.ai/methodology">evav.ai/methodology</a> &middot;
-        Generated by <a href="https://evav.ai/cli">evav</a> v1.0.0
+        Generated by <a href="https://evav.ai/cli">evav</a> v1.0.4
       </div>
       <div class="footer-meta">Card v1.0 &middot; OA Battery v1.0</div>
     </div>

@@ -403,6 +403,70 @@ def schema_check(results_dir, schema, output):
             console.print(f"  Cells with >10% schema breaks: {len(result['high_break_cells'])}")
 
 
+@cli.command()
+@click.option("--provider", required=True, type=click.Choice(["anthropic", "openai", "google", "deepseek", "openrouter"]))
+@click.option("--model", "model_name", required=True)
+@click.option("--decisions-csv", default=None, help="Customer's decision log CSV (else uses synthetic fixture)")
+@click.option("--output", default="bias.json", type=click.Path(path_type=Path))
+def bias(provider, model_name, decisions_csv, output):
+    """Bias / disparate-impact audit. Wraps Fairlearn if installed."""
+    from oa_bench.battery import ModelConfig
+    from oa_bench.models import get_adapter
+    from oa_bench.modules.bias import run_bias_audit
+
+    cfg = ModelConfig(provider=provider, name=model_name)
+    model = get_adapter(cfg)
+    console.print(f"Running bias audit against {provider}/{model_name}...")
+    result = run_bias_audit(model, decisions_csv=decisions_csv)
+    output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    console.print(f"[green][ok][/green] Results: {output}")
+    if "demographic_parity_diff_pp" in result:
+        console.print(f"  Demographic parity diff: {result['demographic_parity_diff_pp']}pp")
+        console.print(f"  Four-fifths impact ratio: {result.get('four_fifths_impact_ratio')}")
+        if result.get("four_fifths_violated"):
+            console.print(f"  [red][!] ADVERSE IMPACT DETECTED[/red]")
+
+
+@cli.command(name="tool-safety")
+@click.option("--provider", required=True, type=click.Choice(["anthropic", "openai", "google", "deepseek", "openrouter"]))
+@click.option("--model", "model_name", required=True)
+@click.option("--output", default="tool_safety.json", type=click.Path(path_type=Path))
+def tool_safety(provider, model_name, output):
+    """Tool / function call safety for agentic deployments."""
+    from oa_bench.battery import ModelConfig
+    from oa_bench.models import get_adapter
+    from oa_bench.modules.tool_safety import run_tool_safety_test
+
+    cfg = ModelConfig(provider=provider, name=model_name)
+    model = get_adapter(cfg)
+    console.print(f"Running tool-safety probes against {provider}/{model_name}...")
+    result = run_tool_safety_test(model)
+    output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    console.print(f"[green][ok][/green] Results: {output}")
+    if "overall_accuracy_pct" in result:
+        console.print(f"  Tool-safety accuracy: {result['overall_accuracy_pct']}%")
+
+
+@cli.command(name="reasoning-trace")
+@click.option("--provider", required=True, type=click.Choice(["anthropic", "openai", "google", "deepseek", "openrouter"]))
+@click.option("--model", "model_name", required=True)
+@click.option("--output", default="reasoning_trace.json", type=click.Path(path_type=Path))
+def reasoning_trace(provider, model_name, output):
+    """Detect self-correction failure + trace-decision divergence in reasoning models."""
+    from oa_bench.battery import ModelConfig
+    from oa_bench.models import get_adapter
+    from oa_bench.modules.reasoning_trace import run_reasoning_trace_test
+
+    cfg = ModelConfig(provider=provider, name=model_name)
+    model = get_adapter(cfg)
+    console.print(f"Running reasoning-trace probes against {provider}/{model_name}...")
+    result = run_reasoning_trace_test(model)
+    output.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    console.print(f"[green][ok][/green] Results: {output}")
+    if "overall_failure_rate_pct" in result:
+        console.print(f"  Trace-faithfulness failure rate: {result['overall_failure_rate_pct']}%")
+
+
 def main():
     cli(prog_name="evav")
 

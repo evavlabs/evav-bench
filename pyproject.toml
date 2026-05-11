@@ -3,18 +3,29 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "oa-bench"
+name = "evav"
 version = "1.0.0"
-description = "OA Evaluation Battery — domain-agnostic CLI for matched-pair deployment-safety auditing"
-authors = [{name = "OA / Anthony Cruz", email = "anthonyc1208@gmail.com"}]
+description = "EVAV Operational Alignment Battery — open-source CLI for matched-pair AI deployment safety auditing"
+authors = [{name = "EVAV", email = "labs@evav.ai"}]
+maintainers = [{name = "Anthony Cruz", email = "labs@evav.ai"}]
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Proprietary"}
+keywords = [
+    "ai-safety", "alignment", "evaluation", "deployment-safety",
+    "matched-pair", "specification-gaming", "compliance",
+    "behavioral-intelligence", "regulatory-ai",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Testing",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
 ]
 dependencies = [
     "click>=8.1.0",
@@ -38,14 +49,20 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.7.0",
 ]
-supabase = [
-    "supabase>=2.0.0",
-]
-pdf = [
-    "pypandoc>=1.13",
-]
+supabase = ["supabase>=2.0.0"]
+pdf = ["pypandoc>=1.13"]
+
+[project.urls]
+Homepage = "https://evav.ai"
+Repository = "https://github.com/evavlabs/evav-bench"
+Issues = "https://github.com/evavlabs/evav-bench/issues"
+Methodology = "https://evav.ai/methodology"
+Leaderboard = "https://evav.ai/leaderboard"
+Corpus = "https://huggingface.co/datasets/evavlabs/oa"
+Changelog = "https://github.com/evavlabs/evav-bench/blob/main/CHANGELOG.md"
 
 [project.scripts]
+evav = "oa_bench.cli:main"
 oa-bench = "oa_bench.cli:main"
 
 [tool.setuptools.packages.find]
@@ -58,10 +75,7 @@ extend-exclude = ["__pycache__", "build", "dist"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "RUF"]
-ignore = [
-    "E501",  # line length handled by formatter
-    "B008",  # function calls in argument defaults
-]
+ignore = ["E501", "B008"]
 
 [tool.ruff.format]
 quote-style = "double"
